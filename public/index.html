@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>WS Control</title>
+    <link rel="stylesheet" href="css/vendor/pure-min.css">
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="css/vendor/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="css/vendor/grids-responsive-min.css">
+    <!--<![endif]-->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <h1>Welcome to WSControl</h1>
+    <form class="pure-form pure-form-aligned" method="post" action="#">
+
+        <fieldset>
+            <legend>Settings</legend>
+            <div class="pure-control-group">
+                <label>Registered Cards:</label>
+                <div class="InputAddOn">
+                    <select id="showCards" multiple></select>
+                    <button id="deleteBtn">Delete</button>
+                    <button id="emitBtn">Emit</button>
+                </div>
+
+            </div>
+            <div class="pure-control-group">
+                <label>Add Card:</label>
+                <div class="InputAddOn">
+                    <input type="text" name="newcard" placeholder="Enter UUID" value="" />
+                    <button id="add" class="">Add</button>
+                </div>
+            </div>
+
+        </fieldset>
+
+    </form>
+
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
