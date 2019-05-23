@@ -42,7 +42,12 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--port", help="Port", default="3000")
     args = parser.parse_args()
 
-    sio.connect('http://%s:%s' % (args.host, args.port))
+    while not connected:
+        try:
+            sio.connect('http://%s:%s' % (args.host, args.port))
+        except Exception, e:
+            logging.error("Can't connect to http://%s:%s - %s", args.host, args.port, e)
+            sleep(5)
 
     GPIO.setwarnings(False)
     MIFAREReader = MFRC522.MFRC522()
