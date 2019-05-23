@@ -1,4 +1,4 @@
-var socket = io(), // connect to the websocket, standard is localhost and the same port
+var socket = io(), // connect to the websocket
     showCards = $('#showCards'),
     newCards = $('#newCards'),
     emitBtn = $('#emitBtn'),

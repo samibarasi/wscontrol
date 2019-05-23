@@ -2,7 +2,7 @@
 
 import socketio
 import argparse
-from time import sleep
+from time import sleep, time
 import RPi.GPIO as GPIO
 import MFRC522
 import logging
@@ -13,14 +13,17 @@ connected = False
 
 @sio.on('connect')
 def on_connect():
+    global connected
     logging.info('server connection established')
     connected = True
+    print("wtf", connected)
     #sio.emit('my message', {'data': 'Hello Server!'})
     #sio.emit('my broadcast message', {'data': 'Hello Everybody!'})
 
 @sio.on('my message')
 def on_message(data):
-    logging.debug('message received with ', data)
+    logging.debug('message received with')
+    logging.debug(data)
 
 @sio.on('disconnect')
 def on_disconnect():
@@ -38,12 +41,13 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-h", "--host", help="Host", default="localhost")
+    parser.add_argument("-H", "--host", help="Host", default="localhost")
     parser.add_argument("-p", "--port", help="Port", default="3000")
     args = parser.parse_args()
 
     while not connected:
         try:
+            print('connected', connected)
             sio.connect('http://%s:%s' % (args.host, args.port))
         except Exception, e:
             logging.error("Can't connect to http://%s:%s - %s", args.host, args.port, e)
@@ -65,17 +69,17 @@ if __name__ == '__main__':
                 if status == MIFAREReader.MI_OK:
                     uid = "%02x-%02x-%02x-%02x" % (uid_a[0], uid_a[1], uid_a[2], uid_a[3])
                     logging.debug("Found Card: %s" % uid)
-
-            if uid and not inrange:
-                logging.debug("Start")
-                control('rfid', {'uuid': uid, 'event': 'start'})
+            if uid: 
+                if not inrange:
+                    logging.debug("Start")
+                    control('my message', {'uuid': uid, 'event': 'start'})
+                    inrange = True
                 last = time()
-                inrange = True
-            elif inrange and lasst + 1 < time():
+            elif inrange and last + 1 < time():
                 logging.debug("Stop")
                 last = 9999999999
-                control('rfid', {'uuid': uid, 'event': 'stop'})
-                
+                control('my message', {'uuid': uid, 'event': 'stop'})
+              
             sleep(0.1)
 
     except KeyboardInterrupt:
