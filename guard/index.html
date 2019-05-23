@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/vendor/pure-min.css">
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="css/vendor/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="css/vendor/grids-responsive-min.css">
+    <!--<![endif]-->
+    <link rel="stylesheet" href="css/guard.css" />
+</head>
+
+<body>
+    <!-- <div class="pure-g">
+        <div class="pure-u-1-3">
+            <svg id="bauteil1" viewbox="0 0 300 300">
+                <rect x="0" y="0" width="300" height="300" />
+            </svg>
+        </div>
+        <div class="pure-u-1-3">
+            <svg id="bauteil2" viewbox="0 0 300 300">
+                <circle cx="150" cy="150" r="150" />
+            </svg>
+        </div>
+        <div class="pure-u-1-3">
+            <svg id="bauteil3" viewbox="0 0 300 300">
+                <path d="M 150,0 300,300 0,300 150,0 Z" />
+            </svg>
+        </div>
+    </div> -->
+
+    <div class="pure-g status">
+        <div class="pure-u-1">
+            <h1 id="statustext"></h1>
+            <p id="hinweis"></p>
+        </div>
+        <div class="pure-u-1">
+            <div id="congrats">
+                <h1>Sehr gut</h1>
+                <p>Es wurden alle Bauteile gefunden!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/guard.js"></script>
+</body>
+
+</html>

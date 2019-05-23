@@ -7,10 +7,12 @@ from time import sleep
 host = 'localhost'
 port = 3000
 sio = socketio.Client()
+connected = False
 
 @sio.on('connect')
 def on_connect():
     print('connection established')
+    connected = True
     sio.emit('my message', {'data': 'Hello Server!'})
     sio.emit('my broadcast message', {'data': 'Hello Everybody!'})
     
@@ -23,20 +25,23 @@ def on_message(data):
 @sio.on('disconnect')
 def on_disconnect():
     print('disconnected from server')
+    connected = False
 
 def control(command, uid):
-    sio.emit('my message', {'command': command, 'uid': uid})
+    sio.emit(command, {'uuid': uid})
 
 def exit_gracefully():
-    sio.disconnect()
+    if connected:
+        sio.disconnect()
 
 if __name__ == '__main__':
     sio.connect('http://%s:%s' % (host, port))
     try:
         while True:
             sleep(10)
+            sio.emit('my message', {'uuid': '34-c5-f1-a5'})
     except KeyboardInterrupt:
-        print("bye");
+        print("bye")
         pass
     finally:
         exit_gracefully()

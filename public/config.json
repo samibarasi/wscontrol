@@ -1,14 +1,15 @@
 {
-    "add": false, 
-    "image_url": "file:///home/user/bcontrol/media/standbild.png", 
-    "inrange": 1, 
-    "page_url": "file:///home/user/WBT/WBT-Bauteil-Waechter/start.html", 
-    "send_key": "l", 
-    "startrange": 500, 
-    "stoprange": 1000, 
-    "timeout": 30, 
+    "add": false,
+    "image_url": "file:///home/user/bcontrol/media/standbild.png",
+    "inrange": 1,
+    "page_url": "file:///home/user/WBT/WBT-Bauteil-Waechter/start.html",
+    "send_key": "l",
+    "startrange": 500,
+    "stoprange": 1000,
+    "timeout": 30,
     "uuids": [
         "e9-5a-c9-55",
-	    "d4-27-25-1f"
+        "d4-27-25-1f",
+        "34-c5-f1-a5"
     ]
 }

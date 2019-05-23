@@ -13,7 +13,7 @@
     <!--[if gt IE 8]><!-->
     <link rel="stylesheet" href="css/vendor/grids-responsive-min.css">
     <!--<![endif]-->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 
 <body>
@@ -34,8 +34,8 @@
             <div class="pure-control-group">
                 <label>Add Card:</label>
                 <div class="InputAddOn">
-                    <input type="text" name="newcard" placeholder="Enter UUID" value="" />
-                    <button id="add" class="">Add</button>
+                    <select id="newCards"></select>
+                    <button id="addBtn" class="">Add</button>
                 </div>
             </div>
 
@@ -45,7 +45,7 @@
 
     <script src="js/jquery-3.4.1.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/admin.js"></script>
 </body>
 
 </html>
