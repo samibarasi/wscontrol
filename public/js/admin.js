@@ -15,7 +15,7 @@ socket.on('connect', () => {
     socket.emit('my broadcast message', { 'data': 'Hello Everybody!' });
 
     // Subcribe to room
-    socket.emit('subscribe', { 'room': 'guard' });
+    socket.emit('subscribe', { 'room': 'guardians-of-the-galaxy' });
 
 });
 
@@ -110,13 +110,16 @@ $(document).ready(function () {
         var arr = [];
         $('#newCards option:selected').each(function () {
             arr.push($(this).val());
-        });
+        }).remove();
 
+        // TODO: Multi Select Support. Sending an array of uuids instead.
         // sending an emit for every selected uuid 
-        arr.forEach((item) => {
-            socket.emit('add uuid', { 'uuid': item });
+        arr.forEach((value) => {
+            // TODO: Callback function if message was received!
+            socket.emit('add uuid', { 'uuid': value });
+            found_uuids = found_uuids.filter(item => item !== value)
         });
 
-        newCards.empty();
+
     })
 });

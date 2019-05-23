@@ -27,8 +27,8 @@ def on_disconnect():
     print('disconnected from server')
     connected = False
 
-def control(command, uid):
-    sio.emit(command, {'uuid': uid})
+def control(command, data):
+    sio.emit(command, data)
 
 def exit_gracefully():
     if connected:
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     try:
         while True:
             sleep(10)
-            sio.emit('my message', {'uuid': '34-c5-f1-a5'})
+            control('my message', {'uuid': '34-c5-f1-a5', 'event': 'start'})
     except KeyboardInterrupt:
         print("bye")
         pass

@@ -11,7 +11,7 @@ socket.on('connect', () => {
     socket.emit('my message', { 'data': 'Hello Server!' });
     socket.emit('my broadcast message', { 'data': 'Hello Everybody!' });
     // Subcribe to room
-    socket.emit("subscribe", { room: "guard" });
+    socket.emit("subscribe", { room: "guardians-of-the-galaxy" });
 });
 
 socket.on("room joined", function (data) {

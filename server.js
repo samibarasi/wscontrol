@@ -8,7 +8,18 @@ var express = require('express'),
     path = require('path'),
     port = 3000;
 
-var config = JSON.parse(fs.readFileSync("public/config.json"));
+const configFile = './config.json';
+
+var config = JSON.parse(fs.readFileSync(configFile));
+
+console.log(`Watching for file changes on ${configFile}`);
+
+fs.watchFile(configFile, (curr, prev) => {
+  console.log(`${configFile} file Changed`);
+  config = JSON.parse(fs.readFileSync(configFile));
+  // Send config to guardians group
+  io.to('guardians-of-the-galaxy').emit('config', config);
+});
 
 const logoURL = path.join('file://', '/Users/samibarasi/Temp/IPDM-Basistraining/WBT/WBT-Bauteil-Waechter/start.html');
 
@@ -93,34 +104,16 @@ io.on('connection', function (socket) {
     // 
     socket.on('my message', function (msg) {
         console.log('my message', msg);
-        if (msg.uuid && msg.uuid.length) {
+        // Check if a uuid property was provided forward message to the guardians-of-the-galaxy group
+        if (msg.uuid) {
             console.log('UUID received: ' + msg.uuid);
-            if (config.uuids.includes(msg.uuid)) {
-                console.log(msg.uuid + " is known");
-                io.to('guard').emit('my message', {'uuid': msg.uuid});
-            } else {
-                console.log(msg.uuid + " is unknown");
-                io.to('guard').emit('my message', {'uuid': msg.uuid});
-                //io.to('admin').emit('my message', {'uuid': msg.uuid});
-            }
+            io.to('guardians-of-the-galaxy').emit('my message', msg);
         }
     });
 
     socket.on('my broadcast message', function (msg) {
         console.log('my broadcast message', msg);
         socket.broadcast.emit('my message', msg);
-    });
-
-    socket.on('start', function (msg) {
-        console.log('start', msg);
-    });
-
-    socket.on('pause', function (msg) {
-        console.log('pause');
-    });
-
-    socket.on('reset', function (msg) {
-        console.log('reset');
     });
 
     socket.on('add uuid', function (data) {
@@ -133,9 +126,8 @@ io.on('connection', function (socket) {
                 config.uuids.push(data.uuid);
                 console.log(`UUID(${data.uuid}) was added`);
                 // Write config to file
-                fs.writeFileSync("public/config.json", JSON.stringify(config, null, 4) );
-                // Send config to group
-                io.to('guard').emit('config', config);
+                fs.writeFileSync(configFile, JSON.stringify(config, null, 4) );
+                
             } else {
                 console.log(`UUID(${data.uuid}) was not added, because it's already registered in the config!`)
             }
