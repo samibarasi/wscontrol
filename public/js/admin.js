@@ -4,8 +4,11 @@ var socket = io(), // connect to the websocket
     emitBtn = $('#emitBtn'),
     addBtn = $('#addBtn'),
     deleteBtn = $('#deleteBtn'),
+    saveBtn = $('#saveBtn'),
+    formDevice = $('#formDevice'),
     known_uuids = [],
-    found_uuids = [];
+    found_uuids = [],
+    config;
 
 // On Connect Handler for the Websocket
 socket.on('connect', () => {
@@ -31,6 +34,7 @@ socket.on('room left', function (data) {
 // On config Handler
 socket.on('config', (data) => {
     known_uuids = data.uuids;
+    config = data;
     updateListOfKnownUUIDs();
 });
 
@@ -73,6 +77,8 @@ function updateListOfKnownUUIDs() {
         return `<option value="${item}">${item}</option>`;
     });
     showCards.html(items.join(''));
+    $('#formDevice').hide();
+    $('#uuid').val(null);
 }
 
 $(document).ready(function () {
@@ -85,6 +91,30 @@ $(document).ready(function () {
     //             updateListOfKnownUUIDs();
     //         }
     //     });
+
+    showCards.on('click', function (e) {
+        var arr = $(this).val();
+        if (arr && arr.length == 1) {
+            $('#formDevice').show();
+            $('#uuid').val(arr[0]);
+            let selected_item = config.data.find((item) => {
+                return item.uuid == arr[0];
+            });
+
+            if (selected_item) {
+                $('#title').val(selected_item.title);
+                console.log(selected_item);
+                $('#thumb').attr("src", selected_item.image_url);
+            } else {
+                $('#title').val(null);
+                $('#thumb').removeAttr("src");
+            }
+            
+        } else {
+            $('#formDevice').hide();
+            $('#uuid').val(null);
+        }
+    });
 
     // Click Handler for emitting uuids and testing purposes
     emitBtn.on('click', function (e) {
@@ -121,5 +151,29 @@ $(document).ready(function () {
         });
 
 
-    })
+    });
+
+    formDevice.on('submit', function (e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        $('#message').html("Sending data...").show();
+
+        $.ajax({
+            url: formDevice.attr('action'),
+            type: 'POST',
+            data: formData,
+            success: function (data) {
+                console.log(data);
+                formDevice.trigger("reset");
+                $('#formDevice').hide();
+                $('#uuid').val(null);
+                $('#message').html('config saved').addClass('button-success').delay(5000).fadeOut("slow");
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+    });
+
 });

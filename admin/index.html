@@ -17,31 +17,59 @@
 </head>
 
 <body>
-    <h1>Welcome to WSControl</h1>
-    <form class="pure-form pure-form-aligned" method="post" action="#">
+    <div class="pure-g">
+        <div class="pure-u-1">
+            <h1>Welcome to WSControl</h1>
+        </div>
+        <div class="pure-u-1">
+            <form class="pure-form pure-form-aligned" method="POST" action="#">
 
-        <fieldset>
-            <legend>Settings</legend>
-            <div class="pure-control-group">
-                <label>Registered Cards:</label>
-                <div class="InputAddOn">
-                    <select id="showCards" multiple></select>
-                    <button id="deleteBtn">Delete</button>
-                    <button id="emitBtn">Emit</button>
-                </div>
+                <fieldset>
+                    <legend>Settings</legend>
+                    <div class="pure-control-group">
+                        <label>Add Card:</label>
+                        <div class="InputAddOn">
+                            <select id="newCards"></select>
+                            <button id="addBtn" class="">Add</button>
+                        </div>
+                    </div>
+                    <div class="pure-control-group">
+                        <label>Registered Cards:</label>
+                        <div class="InputAddOn">
+                            <select id="showCards" multiple></select>
+                            <button id="deleteBtn">Delete</button>
+                            <button id="emitBtn">Emit</button>
+                        </div>
 
-            </div>
-            <div class="pure-control-group">
-                <label>Add Card:</label>
-                <div class="InputAddOn">
-                    <select id="newCards"></select>
-                    <button id="addBtn" class="">Add</button>
-                </div>
-            </div>
+                    </div>
+                </fieldset>
+            </form>
+            <form name="formDevice" id="formDevice" method="POST" action="/admin" enctype="multipart/form-data"
+                class="pure-form  pure-form-aligned">
+                <fieldset>
+                    <legend>Data</legend>
+                    <div class="pure-control-group">
+                        <label for="title">Title:</label>
+                        <input name="title" id="title" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label for="image">Image:</label>
+                        <img id="thumb" src="" width="50" />
+                        <input type="file" name="image" id="image" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label></label>
+                        <button id="saveBtn">Save</button>
+                    </div>
+                    <input type="hidden" id="uuid" name="uuid" />
+                </fieldset>
+            </form>
+        </div>
 
-        </fieldset>
-
-    </form>
+        <div id="message" class="pure-u-1">
+            <button class="pure-button"></button>
+        </div>
+    </div>
 
     <script src="js/jquery-3.4.1.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>

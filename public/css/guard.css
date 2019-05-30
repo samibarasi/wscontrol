@@ -24,7 +24,18 @@ h1 {
     font-size: 1.6rem;
 }
 
-#bauteil1, #bauteil2, #bauteil3, #congrats {
+.bauteile {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+#bauteil1, #bauteil2, #bauteil3 {
+   
+}
+
+#congrats {
     display: none;
 }
 

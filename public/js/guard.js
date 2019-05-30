@@ -1,5 +1,6 @@
 var known_uuids = [],
-    found_uuids = [];
+    found_uuids = [],
+    config;
 
 const socket = io();
 
@@ -24,6 +25,8 @@ socket.on("room left", function (data) {
 
 socket.on('config', function (data) {
     known_uuids = data.uuids;
+    config = data;
+    numBauteile();
 });
 
 socket.on('disconnect', () => {
@@ -45,6 +48,7 @@ $(document).ready(function () {
     //     .done(function (data) {
     //         known_uuids = data.uuids;
     //     });
+
 
 
 });
@@ -88,6 +92,17 @@ function numBauteile() {
     if (found_uuids.length >= 3) {
         gotoPlayWBT();
     }
+
+    let foundData = config.data.filter((value) => {
+        for (let i = 0; i < found_uuids.length; i++) {
+            if (value.uuid == found_uuids[i]) return true;
+        }
+        return false;
+    });
+
+    for (let i = 0; i < foundData.length; i++) {
+        $(`#bauteil${i + 1} > image`).attr('xlink:href', foundData[i].image_url);
+    }
 }
 
 var keys = [0, 0, 0];
@@ -108,4 +123,3 @@ document.addEventListener('keydown', function (event) {
 
 });
 
-numBauteile();

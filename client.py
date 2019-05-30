@@ -40,6 +40,8 @@ if __name__ == '__main__':
         while True:
             sleep(10)
             control('my message', {'uuid': '34-c5-f1-a5', 'event': 'start'})
+            sleep(10)
+            control('my message', {'uuid': 'e9-5a-c9-55', 'event': 'start'})
     except KeyboardInterrupt:
         print("bye")
         pass
