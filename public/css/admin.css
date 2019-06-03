@@ -36,7 +36,7 @@
 
 .success,
 .error,
-.warning,
+.warn,
 .info {
     color: white;
     border-radius: 4px;
@@ -52,7 +52,7 @@
     background: rgb(202, 60, 60); /* this is a maroon */
 }
 
-.warning {
+.warn {
     background: rgb(223, 117, 20); /* this is an orange */
 }
 

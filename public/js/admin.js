@@ -8,10 +8,13 @@ var socket = io(), // connect to the websocket
     formDevice = $('#formDevice'),
     foundData = [],
     config;
+    
+message('Socket is connected: ' + socket.connected, 'warn');
 
 // On Connect Handler for the Websocket
 socket.on('connect', () => {
     console.log('Socket is connected: ' + socket.connected);
+    message('Socket is connected: ' + socket.connected, 'success');
     // Say Hello
     socket.emit('my message', { 'data': 'Hello Server!' });
     socket.emit('my broadcast message', { 'data': 'Hello Everybody!' });
@@ -33,20 +36,20 @@ socket.on('room left', function (data) {
 });
 
 // On config Handler
-socket.on('config', (data) => {
+socket.on('config', data => {
     config = data;
-    updateListOfKnownUUIDs();
+    updateKnownUUIDs();
     $('#blocker').hide();
 });
 
-socket.on('my message', (data) => {
+socket.on('my message', msg => {
     // Make sure a uuid property was received
-    if (data.uuid) {
-        checkForUnknownUUID(data.uuid);
+    if (msg.uuid && msg.event == "start") {
+        checkUnknownUUID(msg.uuid);
     }
 });
 
-function checkForUnknownUUID(uuid) {
+function checkUnknownUUID(uuid) {
     // Make sure the uuid is note already known
     if (config.data.findIndex(item => item.uuid == uuid) == -1) {
         console.info(`UUID(${uuid}) is unknown!`);
@@ -55,25 +58,37 @@ function checkForUnknownUUID(uuid) {
             // Push UUID to the found array
             foundData.push(uuid);
             console.info(`New UUID(${uuid}) found!`);
+            message(`New UUID(${uuid}) found!`, 'info');
             // Update list of new devices
-            updateListOfFoundUUIDs();
+            updateFoundUUIDs();
 
         } else {
-            console.warn(`UUID(${uuid}) was already found!`)
+            console.warn(`UUID(${uuid}) was already found!`);
+            message(`UUID(${uuid}) was already found!`, 'warn');
         }
     } else {
-        console.warn(`UUID(${uuid}) is already known!`);
+        console.warn(`UUID(${uuid}) is already registered!`);
+        message(`UUID(${uuid}) is already registered!`, 'warn');
     }
 }
 
-function updateListOfFoundUUIDs() {
+function message(str, level) {
+    $('#message').html(str).removeClass().addClass(level).show().delay(5000).fadeOut("slow");
+}
+
+function updateFoundUUIDs() {
     var items = foundData.map(function (item) {
         return `<option value="${item}">${item}</option>`;
     });
     newCards.html(items.join(''));
+    if (foundData.length) {
+        addBtn.prop('disabled', false);
+    } else {
+        addBtn.prop('disabled', true);
+    }
 }
 
-function updateListOfKnownUUIDs() {
+function updateKnownUUIDs() {
     var items = config.data.map(function (item) {
         return `<option value="${item.uuid}">${item.uuid}</option>`;
     });
@@ -83,6 +98,8 @@ function updateListOfKnownUUIDs() {
 }
 
 $(document).ready(function () {
+
+    updateFoundUUIDs();
 
     showCards.on('click', function (e) {
         var arr = $(this).val();
@@ -108,22 +125,6 @@ $(document).ready(function () {
         }
     });
 
-    // Click Handler for emitting uuids and testing purposes
-    emitBtn.on('click', function (e) {
-        e.preventDefault();
-
-        // get selected uuids and stuff them into an array
-        var arr = [];
-        $('#showCards option:selected').each(function () {
-            arr.push($(this).val());
-        });
-
-        // sending an emit for every selected uuid 
-        arr.forEach((item) => {
-            socket.emit('my message', { 'uuid': item , 'event': 'start'});
-        });
-    });
-
     // Click Handler for adding new uuids to known array
     addBtn.on('click', function (e) {
         e.preventDefault();
@@ -136,19 +137,19 @@ $(document).ready(function () {
 
         // TODO: Multi Select Support. Sending an array of uuids instead.
         // sending an emit for every selected uuid 
-        arr.forEach((value) => {
-            // TODO: Callback function if message was received!
-            socket.emit('add uuid', { 'uuid': value });
-            // Remove uuid from the new cards drop down
-            foundData = foundData.filter(item => item !== value);
-        });
-
-        $('#blocker').show();
-
-
+        if (arr.length) {
+            arr.forEach((value) => {
+                // TODO: Callback function if message was received!
+                socket.emit('add uuid', { 'uuid': value });
+                // Remove uuid from the new cards drop down
+                foundData = foundData.filter(item => item !== value);
+            });
+    
+            $('#blocker').show();
+        }
     });
 
-
+    // Click Handler for emitting uuids and testing purposes
     removeBtn.on('click', function(e) {
         e.preventDefault();
 
@@ -170,17 +171,34 @@ $(document).ready(function () {
 
     });
 
-    formDevice.on('submit', function (e) {
-        console.log($('#image')[0].files[0]);
+    emitBtn.on('click', function (e) {
         e.preventDefault();
-        var formData = new FormData(this);
+
+        // get selected uuids and stuff them into an array
+        var arr = [];
+        $('#showCards option:selected').each(function () {
+            arr.push($(this).val());
+        });
+
+        // sending an emit for every selected uuid 
+        arr.forEach((item) => {
+            socket.emit('my message', { 'uuid': item , 'event': 'start'});
+        });
+    });
+
+    formDevice.on('submit', function (e) {
+        e.preventDefault();
+        var formData = new FormData();
+        formData.append('uuid', $('#uuid').val());
+        formData.append('title', $('#title').val());
+
+        // Make sure upload file is selected
         if ($('#image')[0].files[0]) {
-            formData.delete('image');
+            formData.append('image', $('#image')[0].files[0]);
         }
 
-        $('#message').html("Sending data...").show();
-        $('#message').removeClass().addClass('info');
-
+        // Submitting form
+        message('Sending data...', 'info');
         $.ajax({
             url: formDevice.attr('action'),
             type: 'POST',
@@ -190,11 +208,11 @@ $(document).ready(function () {
                 formDevice.trigger("reset");
                 $('#formDevice').hide();
                 $('#uuid').val(null);
-                $('#message').html('config saved').removeClass().addClass('success').delay(5000).fadeOut("slow");
+                message('config saved', 'success');
             },
             error: function (request, status, error) {
                 let response = JSON.parse(request.responseText);
-                $('#message').html(`Message: ${response.message} | StatusText: ${status}`).removeClass().addClass('error');
+                message(`Message: ${response.message} | StatusText: ${status}`, 'error')
             },
             cache: false,
             contentType: false,

@@ -21,7 +21,6 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.0",
-    "file-type": "^11.1.0",
     "formidable": "^1.2.1",
     "moment": "^2.24.0",
     "nodemon": "^1.19.0",

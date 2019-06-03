@@ -2,9 +2,19 @@
     "timeout": 30,
     "data": [
         {
-            "uuid": "d4-27-25-1f",
+            "uuid": "a9-e9-c7-55",
+            "title": "Bremscheiben",
+            "image_url": "/uploads/bremsscheiben.png"
+        },
+        {
+            "uuid": "d9-e1-c6-55",
             "title": "Kolben",
             "image_url": "/uploads/kolben.png"
+        },
+        {
+            "uuid": "d4-27-25-1f",
+            "title": "Turbo",
+            "image_url": "/uploads/turbo.png"
         }
     ]
 }

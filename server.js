@@ -28,7 +28,7 @@ fs.watchFile(configFile, (curr, prev) => {
 
 const logoURL = path.join('file://', '/Users/samibarasi/Temp/IPDM-Basistraining/WBT/WBT-Bauteil-Waechter/start.html');
 
-checkForUnknownUUID = (uuid) => {
+checkUnknownUUID = (uuid) => {
     // Make sure the uuid is note already known
     if (!known_uuids.includes(uuid)) {
         console.info(`UUID(${uuid}) is unknown!`);
@@ -38,7 +38,7 @@ checkForUnknownUUID = (uuid) => {
             foundData.push(uuid);
             console.info(`New UUID(${uuid}) found!`);
             // Update list of new devices
-            updateListOfFoundUUIDs();
+            updateFoundUUIDs();
 
         } else {
             console.warn(`UUID(${uuid}) was already found!`)
@@ -157,6 +157,7 @@ app.post('/admin', function (req, res) {
                         }
                     } else {
                         // unlink empty uploaded file
+                        console.error("Remove empty file");
                         fs.unlinkSync(files.image.path);
                     }
                 }
@@ -219,14 +220,14 @@ io.on('connection', function (socket) {
         socket.emit('room joined', data);
     });
 
-    //Unsubcribe Handler for user requesting to leave a room
+    // Unsubcribe Handler for user requesting to leave a room
     socket.on('unsubscribe', function (data) {
         socket.leave(data.room);
         console.log(`User (${socket.id}) left room ${data.room}.`);
         socket.emit('room left', data);
     });
 
-    // 
+    // Message Handler for incoming messages. 
     socket.on('my message', function (msg) {
         console.log('my message', msg);
         // Check if a uuid property was provided forward message to the guardians-of-the-galaxy group
