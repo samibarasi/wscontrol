@@ -43,6 +43,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", help="Host", default="localhost")
     parser.add_argument("-p", "--port", help="Port", default="3000")
+    parser.add_argument("-i", "--id", help="ID", default="1")
     args = parser.parse_args()
 
     while not connected:
@@ -56,6 +57,7 @@ if __name__ == '__main__':
     GPIO.setwarnings(False)
     MIFAREReader = MFRC522.MFRC522()
     last = 9999999999
+    lastUid = None
     inrange = False
 
     try:
@@ -72,13 +74,15 @@ if __name__ == '__main__':
             if uid: 
                 if not inrange:
                     logging.debug("Start")
-                    control('my message', {'uuid': uid, 'event': 'start'})
+                    control('my message', {'uuid': uid, 'event': 'start', 'reader': args.id})
                     inrange = True
                 last = time()
+                lastUid = uid
             elif inrange and last + 1 < time():
                 logging.debug("Stop")
                 last = 9999999999
-                control('my message', {'uuid': uid, 'event': 'stop'})
+                inrange = False
+                control('my message', {'uuid': lastUid, 'event': 'stop', 'reader': args.id})
               
             sleep(0.1)
 

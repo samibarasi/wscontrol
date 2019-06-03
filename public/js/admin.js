@@ -3,11 +3,11 @@ var socket = io(), // connect to the websocket
     newCards = $('#newCards'),
     emitBtn = $('#emitBtn'),
     addBtn = $('#addBtn'),
-    deleteBtn = $('#deleteBtn'),
+    removeBtn = $('#removeBtn'),
     saveBtn = $('#saveBtn'),
     formDevice = $('#formDevice'),
     known_uuids = [],
-    found_uuids = [],
+    foundData = [],
     config;
 
 // On Connect Handler for the Websocket
@@ -50,9 +50,9 @@ function checkForUnknownUUID(uuid) {
     if (!known_uuids.includes(uuid)) {
         console.info(`UUID(${uuid}) is unknown!`);
         // Make sure the uuid wasn't found before
-        if (!found_uuids.includes(uuid)) {
+        if (!foundData.includes(uuid)) {
             // Push UUID to the found array
-            found_uuids.push(uuid);
+            foundData.push(uuid);
             console.info(`New UUID(${uuid}) found!`);
             // Update list of new devices
             updateListOfFoundUUIDs();
@@ -66,7 +66,7 @@ function checkForUnknownUUID(uuid) {
 }
 
 function updateListOfFoundUUIDs() {
-    var items = found_uuids.map(function (item) {
+    var items = foundData.map(function (item) {
         return `<option value="${item}">${item}</option>`;
     });
     newCards.html(items.join(''));
@@ -147,9 +147,29 @@ $(document).ready(function () {
         arr.forEach((value) => {
             // TODO: Callback function if message was received!
             socket.emit('add uuid', { 'uuid': value });
-            found_uuids = found_uuids.filter(item => item !== value)
+            // Remove uuid from the new cards drop down
+            foundData = foundData.filter(item => item !== value)
         });
 
+
+    });
+
+
+    removeBtn.on('click', function(e) {
+        e.preventDefault();
+
+        // get selected uuids and stuff them into an array
+        var arr = [];
+        $('#showCards option:selected').each(function () {
+            arr.push($(this).val());
+        }).remove();
+
+        // TODO: Multi Select Support. Sending an array of uuids instead.
+        // sending an emit for every selected uuid 
+        arr.forEach((value) => {
+            // TODO: Callback function if message was received!
+            socket.emit('remove uuid', { 'uuid': value });
+        });
 
     });
 

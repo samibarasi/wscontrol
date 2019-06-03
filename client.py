@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import socketio
+import socket, socketio
 import argparse
 from time import sleep
 
@@ -16,8 +16,6 @@ def on_connect():
     sio.emit('my message', {'data': 'Hello Server!'})
     sio.emit('my broadcast message', {'data': 'Hello Everybody!'})
     
-    
-
 @sio.on('my message')
 def on_message(data):
     print('message received with ', data)
@@ -39,9 +37,9 @@ if __name__ == '__main__':
     try:
         while True:
             sleep(10)
-            control('my message', {'uuid': '34-c5-f1-a5', 'event': 'start'})
+            control('my message', {'uuid': '34-c5-f1-a5', 'event': 'start', 'hostname': socket.gethostname()})
             sleep(10)
-            control('my message', {'uuid': 'e9-5a-c9-55', 'event': 'start'})
+            control('my message', {'uuid': 'e9-5a-c9-55', 'event': 'start', 'hostname': socket.gethostname()})
     except KeyboardInterrupt:
         print("bye")
         pass

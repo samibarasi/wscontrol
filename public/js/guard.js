@@ -1,5 +1,4 @@
-var known_uuids = [],
-    found_uuids = [],
+var foundData = [],
     config;
 
 const socket = io();
@@ -24,7 +23,6 @@ socket.on("room left", function (data) {
 });
 
 socket.on('config', function (data) {
-    known_uuids = data.uuids;
     config = data;
     numBauteile();
 });
@@ -35,32 +33,35 @@ socket.on('disconnect', () => {
 
 socket.on('my message', function (msg) {
     // Make sure a uuid property was received
-    if (msg.uuid) {
-        console.log('UUID ' + msg.uuid + ' received!');
-        checkUUID(msg.uuid);
+    if (msg.uuid && msg.event == 'start') {
+        console.log('UUID ' + msg.uuid + ' with event ' + msg.event + ' received!');
+        checkInUUID(msg.uuid, msg.reader);
+    }
+
+    if (msg.uuid && msg.event == 'stop') {
+        console.log('UUID ' + msg.uuid + ' with event ' + msg.event + ' received!');
+        checkOutUUID(msg.uuid, msg.reader);
     }
 });
 
 $(document).ready(function () {
 
-    // Read config json and populate known uuids into an array of known uuids
-    // $.getJSON('config.json')
-    //     .done(function (data) {
-    //         known_uuids = data.uuids;
-    //     });
-
+    $('.flip-card').on('click', function() {
+        $(this).toggleClass('hover');
+    })
 
 
 });
 
-function checkUUID(uuid) {
+function checkInUUID(uuid, reader) {
     // Make sure the uuid is known
-    if (known_uuids.includes(uuid)) {
+    if (config.data.findIndex(item => item.uuid == uuid) != -1) {
         console.info('UUID ' + uuid + ' is known!');
         // Make sure the uuid wasn't found
-        if (!found_uuids.includes(uuid)) {
+
+        if (!foundData.find(item => item.data.uuid == uuid )) {
             // Push UUID to the found array
-            found_uuids.push(uuid);
+            foundData.push({ data: config.data.find((item) => item.uuid == uuid), reader: reader});
             console.info('Device found!');
             // Update Display to show correct numbers of devices
             numBauteile();
@@ -73,50 +74,61 @@ function checkUUID(uuid) {
     }
 }
 
+function checkOutUUID(uuid) {
+    let idx = foundData.findIndex(item => item.data.uuid == uuid);
+    if (idx != -1) {
+        foundData.splice(idx, 1);
+        numBauteile();
+    }
+}
+
 
 
 function gotoPlayWBT() {
-    document.getElementById("congrats").style.display = "block";
-    setTimeout(function () {
-        //window.open("story.html", "wbt");
-        location.href = "../iRAM/01_MNV_IRAM/story.html"
-    }, 3000);
+    $('#hinweis').html('Sehr gut! Es wurden alle Bauteile gefunden!');
+    $("#congrats").show();
+    // setTimeout(function () {
+    //     location.href = "../iRAM/01_MNV_IRAM/story.html"
+    // }, 3000);
 }
 
 function numBauteile() {
-    document.getElementById("statustext").innerHTML = found_uuids.length + " von 3 Bauteilen.";
-    document.getElementById("hinweis").innerHTML = "";
-    if (found_uuids.length == 1) {
-        document.getElementById("hinweis").innerHTML = "Findet mit Hilfe der SE Teams heraus, ob weitere Module von der Änderung betroffen sind.";
+    $("#statustext").html(foundData.length + " von 3 Bauteilen.");
+    $("#hinweis").html("Findet die drei Bauteile!");
+
+    if (foundData.length == 1) {
+        $("#hinweis").html("Findet mit Hilfe der SE Teams heraus, ob weitere Module von der Änderung betroffen sind.");
     }
-    if (found_uuids.length >= 3) {
+
+    if (foundData.length == 2) {
+        $("#hinweis").html("Gut! Nur noch ein weiteres Bauteil finden.");
+    }
+
+    if (foundData.length >= 3) {
         gotoPlayWBT();
     }
 
-    let foundData = config.data.filter((value) => {
-        for (let i = 0; i < found_uuids.length; i++) {
-            if (value.uuid == found_uuids[i]) return true;
-        }
-        return false;
-    });
-
+    $(`.flip-card`).removeClass('hover');
     for (let i = 0; i < foundData.length; i++) {
-        $(`#bauteil${i + 1} > image`).attr('xlink:href', foundData[i].image_url);
+        $(`#bauteil${foundData[i].reader} > image`).attr('xlink:href', foundData[i].data.image_url);
+        $(`.card${foundData[i].reader}`).addClass('hover');
     }
 }
+
+
 
 var keys = [0, 0, 0];
 document.addEventListener('keydown', function (event) {
     var key = event.key || event.keyCode;
 
     if (key === 'j' || key === 74) {
-        checkUUID(known_uuids[0]);    
+        checkInUUID(config.data[0].uuid, 1);    
     }
     if (key === 'k' || key === 75) {
-        checkUUID(known_uuids[1]);
+        checkInUUID(config.data[1].uuid, 2);
     }
     if (key === 'l' || key === 76) {
-        checkUUID(known_uuids[2]);
+        checkInUUID(config.data[2].uuid, 3);
     }
 
     numBauteile();

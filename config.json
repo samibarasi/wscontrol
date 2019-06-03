@@ -8,18 +8,23 @@
     "data": [
         {
             "uuid": "d4-27-25-1f",
-            "title": "Device 2",
-            "image_url": "/uploads/profil_sami_barasi_sw.jpg"
+            "title": "Kolben",
+            "image_url": "/uploads/kolben.png"
         },
         {
             "uuid": "e9-5a-c9-55",
-            "title": "blub",
-            "image_url": "/uploads/profil_sami_barasi.jpg"
+            "title": "Bremscheiben",
+            "image_url": "/uploads/bremsscheiben.png"
         },
         {
             "uuid": "34-c5-f1-a5",
-            "title": "blu",
-            "image_url": "/uploads/32090_1442227612166_1127341603_31304590_630306_n.jpg"
+            "title": "Turbo",
+            "image_url": "/uploads/turbo.png"
+        },
+        {
+            "uuid": "d9-e1-c6-55",
+            "title": "",
+            "image_url": ""
         }
     ]
 }
