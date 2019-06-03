@@ -23,28 +23,40 @@
     flex-grow: 1;
 }
 
-.button-success,
-.button-error,
-.button-warning,
-.button-secondary {
+#blocker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.success,
+.error,
+.warning,
+.info {
     color: white;
     border-radius: 4px;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
 }
 
-.button-success {
+.success {
     background: rgb(28, 184, 65); /* this is a green */
 }
 
-.button-error {
+.error {
     background: rgb(202, 60, 60); /* this is a maroon */
 }
 
-.button-warning {
+.warning {
     background: rgb(223, 117, 20); /* this is an orange */
 }
 
-.button-secondary {
+.info {
     background: rgb(66, 184, 221); /* this is a light blue */
 }
 

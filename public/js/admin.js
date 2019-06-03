@@ -6,7 +6,6 @@ var socket = io(), // connect to the websocket
     removeBtn = $('#removeBtn'),
     saveBtn = $('#saveBtn'),
     formDevice = $('#formDevice'),
-    known_uuids = [],
     foundData = [],
     config;
 
@@ -19,6 +18,8 @@ socket.on('connect', () => {
 
     // Subcribe to room
     socket.emit('subscribe', { 'room': 'guardians-of-the-galaxy' });
+
+    //$('#blocker').hide();
 
 });
 
@@ -33,9 +34,9 @@ socket.on('room left', function (data) {
 
 // On config Handler
 socket.on('config', (data) => {
-    known_uuids = data.uuids;
     config = data;
     updateListOfKnownUUIDs();
+    $('#blocker').hide();
 });
 
 socket.on('my message', (data) => {
@@ -47,7 +48,7 @@ socket.on('my message', (data) => {
 
 function checkForUnknownUUID(uuid) {
     // Make sure the uuid is note already known
-    if (!known_uuids.includes(uuid)) {
+    if (config.data.findIndex(item => item.uuid == uuid) == -1) {
         console.info(`UUID(${uuid}) is unknown!`);
         // Make sure the uuid wasn't found before
         if (!foundData.includes(uuid)) {
@@ -73,8 +74,8 @@ function updateListOfFoundUUIDs() {
 }
 
 function updateListOfKnownUUIDs() {
-    var items = known_uuids.map(function (item) {
-        return `<option value="${item}">${item}</option>`;
+    var items = config.data.map(function (item) {
+        return `<option value="${item.uuid}">${item.uuid}</option>`;
     });
     showCards.html(items.join(''));
     $('#formDevice').hide();
@@ -82,15 +83,6 @@ function updateListOfKnownUUIDs() {
 }
 
 $(document).ready(function () {
-
-    // Read config json and populate known uuids into a multi-select
-    // $.getJSON('config.json')
-    //     .done(function (data) {
-    //         if (data && data.uuids) {
-    //             known_uuids = data.uuids;
-    //             updateListOfKnownUUIDs();
-    //         }
-    //     });
 
     showCards.on('click', function (e) {
         var arr = $(this).val();
@@ -128,7 +120,7 @@ $(document).ready(function () {
 
         // sending an emit for every selected uuid 
         arr.forEach((item) => {
-            socket.emit('my message', { 'uuid': item });
+            socket.emit('my message', { 'uuid': item , 'event': 'start'});
         });
     });
 
@@ -148,8 +140,10 @@ $(document).ready(function () {
             // TODO: Callback function if message was received!
             socket.emit('add uuid', { 'uuid': value });
             // Remove uuid from the new cards drop down
-            foundData = foundData.filter(item => item !== value)
+            foundData = foundData.filter(item => item !== value);
         });
+
+        $('#blocker').show();
 
 
     });
@@ -162,7 +156,8 @@ $(document).ready(function () {
         var arr = [];
         $('#showCards option:selected').each(function () {
             arr.push($(this).val());
-        }).remove();
+        })
+        //.remove();
 
         // TODO: Multi Select Support. Sending an array of uuids instead.
         // sending an emit for every selected uuid 
@@ -171,13 +166,20 @@ $(document).ready(function () {
             socket.emit('remove uuid', { 'uuid': value });
         });
 
+        $('#blocker').show();
+
     });
 
     formDevice.on('submit', function (e) {
+        console.log($('#image')[0].files[0]);
         e.preventDefault();
         var formData = new FormData(this);
+        if ($('#image')[0].files[0]) {
+            formData.delete('image');
+        }
 
         $('#message').html("Sending data...").show();
+        $('#message').removeClass().addClass('info');
 
         $.ajax({
             url: formDevice.attr('action'),
@@ -188,7 +190,11 @@ $(document).ready(function () {
                 formDevice.trigger("reset");
                 $('#formDevice').hide();
                 $('#uuid').val(null);
-                $('#message').html('config saved').addClass('button-success').delay(5000).fadeOut("slow");
+                $('#message').html('config saved').removeClass().addClass('success').delay(5000).fadeOut("slow");
+            },
+            error: function (request, status, error) {
+                let response = JSON.parse(request.responseText);
+                $('#message').html(`Message: ${response.message} | StatusText: ${status}`).removeClass().addClass('error');
             },
             cache: false,
             contentType: false,

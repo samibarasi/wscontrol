@@ -6,8 +6,8 @@ var express = require('express'),
     util = require('util'),
     moment = require('moment'),
     fs = require('fs'),
-    fsp = fs.promises;
-puppeteer = require('puppeteer'),
+    fsp = fs.promises,
+    puppeteer = require('puppeteer'),
     path = require('path');
 
 var port = process.env.PORT || 3000,
@@ -112,91 +112,91 @@ app.post('/admin', function (req, res) {
     form.uploadDir = "temp";
 
     form.parse(req, function (err, fields, files) {
-        console.log(files, fields);
-        // Make sure type is image
+        //console.log(files, fields);
 
         // Make sure uuid was provided
         if (fields.uuid) {
 
+            let idx = config.data.findIndex(item => item.uuid == fields.uuid);
 
             // Make sure the uuid is known in the config
-            if (config.uuids.includes(fields.uuid)) {
+            if (idx != -1) {
 
                 let filename;
 
-                // Make sure an image file was uploaded
+                // Make sure an file for image was uploaded
                 if (files.image) {
 
-                    // Make sure the uploaded image is supported
-                    if (supportedTypes.includes(files.image.type)) {
-                        res.status(201).json({
-                            message: "received upload",
-                            fields: fields,
-                            files: files
-                        });
-                        // Change Non-URLconform letters
-                        filename = files.image.name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
-                        // Rename file to filename
-                        fs.rename(files.image.path, path.join("public/uploads/", filename), function (err) {
-                            if (err) {
-                                console.log('ERROR: ' + err)
-                            } else {
-                                console.log('file uploaded and named: ' + filename);
-                            }
-                        });
+                    // Make sure the uploaded file is not empty
+                    if (files.image.size > 0) {
+
+                        // Make sure the uploaded file is supported
+                        if (supportedTypes.includes(files.image.type)) {
+
+                            // Substitute non-URLconform letters with _
+                            filename = files.image.name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
+
+                            // Rename file to substituted filename and move it to target folder
+                            fs.rename(files.image.path, path.join("public/uploads/", filename), function (err) {
+                                if (err) {
+                                    console.log('ERROR: ' + err)
+                                } else {
+                                    console.log('file uploaded and named: ' + filename);
+                                }
+                            });
+                        } else {
+                            // If file type is not image send status 500 and delete file from disk
+                            console.error("Unsupported file type");
+                            res.status(500).json({
+                                message: "Unsupported file type"
+                            });
+                            // Delete unsupported image file from server
+                            fs.unlinkSync(files.image.path);
+                            // exit
+                            return;
+                        }
                     } else {
-                        // If file type is not image send status 500 and delete file from disk
-                        res.status(500).json({
-                            message: "Unsupported file type"
-                        });
-                        // Delete unsupported image file from server
-                        fs.unlinkSync(path.join(files.image.path));
-                        // exit
-                        return;
+                        // unlink empty uploaded file
+                        fs.unlinkSync(files.image.path);
                     }
                 }
 
-                let idx = config.data.findIndex(item => item.uuid == fields.uuid);
-
-                if (idx == -1) {
-                    config.data.push({
-                        "uuid": fields.uuid,
-                        "title": fields.title,
-                        "image_url": (filename) ? path.join("/uploads/", filename) : ""
-                    });
-                } else {
-                    config.data[idx] = {
-                        "uuid": fields.uuid,
-                        "title": fields.title,
-                        "image_url": (filename) ? path.join("/uploads/", filename) : ""
-                    };
-                }
-
-                console.log('config updated', config);
+                // Update config and write to disk.
+                config.data[idx] = {
+                    "uuid": fields.uuid,
+                    "title": fields.title,
+                    "image_url": (filename) ? path.join("/uploads/", filename) : config.data[idx].image_url
+                };
                 writeConfig();
+                console.log('config updated', config);
 
-                res.end();
+                // Send status OK
+                res.status(201).json({
+                    message: "OK",
+                    fields: fields,
+                    files: files
+                });
 
             } else {
 
-                // was not provided
-                // If file type is not image send status 500 and delete file from disk
+                // If UUID wasn't found in config file send status ERROR
+                console.error("uuid not found in config file");
                 res.status(500).json({
                     message: "uuid not found in config file"
                 });
                 // If an image file was uploaded, delete it from server
-                if (files.image) fs.unlinkSync(path.join(files.image.path));
+                if (files.image) fs.unlinkSync(files.image.path);
             }
 
         } else {
-            // If file type is not image send status 500 and delete file from disk
+            // If UUID wasn't provided send status ERROR
+            console.error("No uuid provided");
             res.status(500).json({
                 message: "No uuid provided"
             });
             // If an image file was uploaded, delete it from server
-            if (files.image) fs.unlinkSync(path.join(files.image.path));
+            if (files.image) fs.unlinkSync(files.image.path);
         }
-
     })
 });
 
@@ -249,7 +249,7 @@ io.on('connection', function (socket) {
             let idx = config.data.findIndex(item => item.uuid == data.uuid);
             if (idx == -1) {
                 // Add UUID to config
-                config.data.push({uuid: data.uuid, title: "", image_url: ""});
+                config.data.push({ uuid: data.uuid, title: "", image_url: "" });
                 console.log(`UUID(${data.uuid}) was added`);
                 // Write config to file
                 writeConfig();
@@ -267,27 +267,24 @@ io.on('connection', function (socket) {
         //Make sure uuid property was received
         if (data.uuid) {
             // Make sure uuid is in the config
-            let idx = config.uuids.findIndex(item => item == data.uuid);
+            let idx = config.data.findIndex(item => item.uuid == data.uuid);
             if (idx != -1) {
-                // Add UUID to config
-                config.uuids.splice(idx, 1);
+                if (config.data[idx].image_url) {
+                    fs.unlinkSync(path.join('public', config.data[idx].image_url));
+                    console.log(`File ${config.data[idx].image_url} was removed`);
+                }
+                // Remove UUID from config
+                config.data.splice(idx, 1);
                 console.log(`UUID(${data.uuid}) was removed`);
                 // Write config to file
                 writeConfig();
 
             } else {
-                console.log(`UUID(${data.uuid}) was not added, because it's already registered in the config!`)
+                console.log(`UUID(${data.uuid}) was not removed, because it wasn't found in the config!`)
             }
 
         } else {
-            console.log('Adding UUID failed, because no UUID was provided!');
-        }
-    });
-
-    socket.on('save uuid', function (data) {
-        console.log('add uuid', data);
-        if (data.uuid) {
-
+            console.log('Removing UUID failed, because no UUID was provided!');
         }
     });
 

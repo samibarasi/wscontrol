@@ -58,10 +58,9 @@ function checkInUUID(uuid, reader) {
     if (config.data.findIndex(item => item.uuid == uuid) != -1) {
         console.info('UUID ' + uuid + ' is known!');
         // Make sure the uuid wasn't found
-
         if (!foundData.find(item => item.data.uuid == uuid )) {
             // Push UUID to the found array
-            foundData.push({ data: config.data.find((item) => item.uuid == uuid), reader: reader});
+            foundData.push({ data: config.data.find((item) => item.uuid == uuid), reader: (reader) ? reader: foundData.length + 1});
             console.info('Device found!');
             // Update Display to show correct numbers of devices
             numBauteile();
@@ -82,40 +81,27 @@ function checkOutUUID(uuid) {
     }
 }
 
-
-
-function gotoPlayWBT() {
-    $('#hinweis').html('Sehr gut! Es wurden alle Bauteile gefunden!');
-    $("#congrats").show();
-    // setTimeout(function () {
-    //     location.href = "../iRAM/01_MNV_IRAM/story.html"
-    // }, 3000);
-}
-
 function numBauteile() {
     $("#statustext").html(foundData.length + " von 3 Bauteilen.");
-    $("#hinweis").html("Findet die drei Bauteile!");
-
-    if (foundData.length == 1) {
+    
+    if (foundData.length == 0) {
+        $("#hinweis").html("Findet die drei Bauteile!");
+    } else if (foundData.length == 1) {
         $("#hinweis").html("Findet mit Hilfe der SE Teams heraus, ob weitere Module von der Änderung betroffen sind.");
-    }
-
-    if (foundData.length == 2) {
+    } else if (foundData.length == 2) {
         $("#hinweis").html("Gut! Nur noch ein weiteres Bauteil finden.");
-    }
-
-    if (foundData.length >= 3) {
-        gotoPlayWBT();
+    } else if (foundData.length >= 3) {
+        $('#hinweis').html('Sehr gut! Es wurden alle Bauteile gefunden!');
+        $("#congrats").show();
     }
 
     $(`.flip-card`).removeClass('hover');
     for (let i = 0; i < foundData.length; i++) {
-        $(`#bauteil${foundData[i].reader} > image`).attr('xlink:href', foundData[i].data.image_url);
-        $(`.card${foundData[i].reader}`).addClass('hover');
+        $(`#card${foundData[i].reader} .bauteil > image`).attr('xlink:href', foundData[i].data.image_url);
+        $(`#card${foundData[i].reader} .title`).html(foundData[i].data.title);
+        $(`#card${foundData[i].reader}`).addClass('hover');
     }
 }
-
-
 
 var keys = [0, 0, 0];
 document.addEventListener('keydown', function (event) {
