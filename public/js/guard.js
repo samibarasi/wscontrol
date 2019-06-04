@@ -93,6 +93,9 @@ function numBauteile() {
     } else if (foundData.length >= 3) {
         $('#hinweis').html('Sehr gut! Es wurden alle Bauteile gefunden!');
         $("#congrats").show();
+        setTimeout(() => {
+            window.location.href = 'http://localhost:3000/WBT/iRAM/01_MNV_IRAM/story.html';
+        }, 5000)
     }
 
     $(`.flip-card`).removeClass('hover');

@@ -179,6 +179,7 @@ const writeConfig = () => {
 
 // Webserver Setup
 app.use(express.static(__dirname + '/public'));
+app.use('/WBT', express.static(path.resolve(__dirname, '../WBT')));
 
 // Default Route 
 app.get('/', function (req, res) {
