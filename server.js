@@ -17,11 +17,12 @@ var port = process.env.PORT || 3000,
     tempDir = 'temp',
     supportedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
 
-const configFile = './config.json';
+const configFile = path.resolve(__dirname + '/config.json');
 const logoURL = path.join('file://', '/Users/samibarasi/Temp/IPDM-Basistraining/WBT/WBT-Bauteil-Waechter/start.html');
 
 var config = JSON.parse(fs.readFileSync(configFile));
 
+console.log(process.cwd());
 process.on("SIGINT", function () {
     console.log('bye!');
     //graceful shutdown
@@ -57,8 +58,8 @@ const checkAccess = async (loc) => {
 }
 
 // Make sure folder for uploads exists and are accessible
-checkAccess('temp');
-checkAccess('public/uploads');
+checkAccess(path.resolve(__dirname +'/temp'));
+checkAccess(path.resolve(__dirname + '/public/uploads'));
 
 const checkUnknownUUID = (uuid) => {
     // Make sure the uuid is note already known
@@ -142,7 +143,8 @@ const startPuppeteer = async () => {
     const browser = await puppeteer.launch({
         headless: false,
         defaultViewport: null,
-        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        executablePath: '/usr/bin/google-chrome-stable', 
+	//executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         args: ['--kiosk', '--disable-infobars']
     });
 
@@ -423,6 +425,6 @@ io.on('connection', function (socket) {
 var listener = http.listen(port, function () {
     console.log(`listening on port ${listener.address().port}`);
     // Start Puppeteer
-    if (config.logoURL) startPuppeteer();
+    //if (config.logoURL) startPuppeteer();
 });
 
