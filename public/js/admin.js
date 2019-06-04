@@ -102,6 +102,9 @@ function updateKnownUUIDs() {
 }
 
 function updateForm() {
+    $('#timeout').val(config.timeout);
+    $('#launchChrome').attr('checked', config.launchChrome);
+    $('#chromeURL').val(config.chromeURL);
     $('#logoURL').val(config.logoURL);
     $('#siteURL').val(config.siteURL);
 }

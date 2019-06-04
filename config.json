@@ -1,5 +1,7 @@
 {
     "timeout": 30,
+    "launchChrome": true,
+    "chromeURL": "",
     "logoURL": "http://localhost:3000/img/standbild.png",
     "siteURL": "http://localhost:3000/guard",
     "data": [

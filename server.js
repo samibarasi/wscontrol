@@ -129,11 +129,12 @@ function checkOutUUID(uuid) {
 function numBauteile() {
     if (foundData.length > 0) {
         clearInterval(intervalID);
+        if (config.launchChrome) siteTab.bringToFront();
     } else {
         intervalID = setTimeout(() => {
             logoTab.bringToFront();
             siteTab.goto(config.siteURL);
-        }, Number(config.timeout) * 1000)
+        }, config.timeout * 1000)
     }
     console.log(foundData);
 }
@@ -143,8 +144,8 @@ const startPuppeteer = async () => {
     const browser = await puppeteer.launch({
         headless: false,
         defaultViewport: null,
-        executablePath: '/usr/bin/google-chrome-stable', 
-	//executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        //executablePath: '/usr/bin/google-chrome-stable', 
+	    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         args: ['--kiosk', '--disable-infobars']
     });
 
@@ -197,6 +198,10 @@ app.post('/saveapp', function(req, res) {
             return;
         }
 
+        // Mutate config
+        config.timeout = Number(fields.timeout);
+        config.launchChrome = (fields.launchChrome) ? true : false;
+        config.chromeURL = fields.chromeURL;
         config.logoURL = fields.logoURL;
         config.siteURL = fields.siteURL;
 
@@ -345,8 +350,6 @@ io.on('connection', function (socket) {
         if (msg.uuid) {
             console.log('UUID received: ' + msg.uuid);
             io.to('guardians-of-the-galaxy').emit('my message', msg);
-
-            siteTab.bringToFront();
         }
 
         if (msg.uuid && msg.event == 'start') {
@@ -425,6 +428,6 @@ io.on('connection', function (socket) {
 var listener = http.listen(port, function () {
     console.log(`listening on port ${listener.address().port}`);
     // Start Puppeteer
-    //if (config.logoURL) startPuppeteer();
+    if (config.launchChrome && config.logoURL) startPuppeteer();
 });
 

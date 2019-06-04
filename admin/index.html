@@ -26,11 +26,23 @@
                 <fieldset>
                     <legend>App Settings</legend>
                     <div class="pure-control-group">
-                        <label>Logo URL</label>
+                        <label>Timeout:</label>
+                        <input type="number" name="timeout" id="timeout" min="5" max="1800" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label>Launch Chrome:</label>
+                        <input type="checkbox" name="launchChrome" id="launchChrome" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label>Chrome URL:</label>
+                        <input name="chromeURL" id="chromeURL" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label>Logo URL:</label>
                         <input name="logoURL" id="logoURL" />
                     </div>
                     <div class="pure-control-group">
-                        <label>Site URL</label>
+                        <label>Site URL:</label>
                         <input name="siteURL" id="siteURL" />
                     </div>
                     <div class="pure-control-group">
