@@ -3,19 +3,30 @@ var express = require('express'),
     http = require('http').createServer(app),
     io = require('socket.io')(http),
     formidable = require('formidable'),
-    util = require('util'),
     moment = require('moment'),
     fs = require('fs'),
     fsp = fs.promises,
     puppeteer = require('puppeteer'),
-    path = require('path');
+    path = require('path'),
+    logoTab,
+    siteTab,
+    foundData = [],
+    intervalID = 0;
 
 var port = process.env.PORT || 3000,
+    tempDir = 'temp',
     supportedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
 
 const configFile = './config.json';
+const logoURL = path.join('file://', '/Users/samibarasi/Temp/IPDM-Basistraining/WBT/WBT-Bauteil-Waechter/start.html');
 
 var config = JSON.parse(fs.readFileSync(configFile));
+
+process.on("SIGINT", function () {
+    console.log('bye!');
+    //graceful shutdown
+    process.exit();
+});
 
 console.log(`Watching for file changes on ${configFile}`);
 
@@ -26,9 +37,30 @@ fs.watchFile(configFile, (curr, prev) => {
     io.to('guardians-of-the-galaxy').emit('config', config);
 });
 
-const logoURL = path.join('file://', '/Users/samibarasi/Temp/IPDM-Basistraining/WBT/WBT-Bauteil-Waechter/start.html');
+const checkAccess = async (loc) => {
+    // Check if the file exists in the current directory, and if it is writable.
+    fs.access(loc, fs.constants.F_OK | fs.constants.W_OK, (err) => {
+        if (err) {
+            console.error(
+                `${loc} ${err.code === 'ENOENT' ? 'does not exist' : 'is read-only'}`);
+                fs.mkdir(loc, err => {
+                    if (err) {
+                        console.error(`cannot create ${loc}`);
+                        throw(err);
+                    }
+                    console.log(`${loc} was created`);
+                })
+        } else {
+            console.log(`${loc} exists, and it is writable`);
+        }
+    });
+}
 
-checkUnknownUUID = (uuid) => {
+// Make sure folder for uploads exists and are accessible
+checkAccess('temp');
+checkAccess('public/uploads');
+
+const checkUnknownUUID = (uuid) => {
     // Make sure the uuid is note already known
     if (!known_uuids.includes(uuid)) {
         console.info(`UUID(${uuid}) is unknown!`);
@@ -48,7 +80,7 @@ checkUnknownUUID = (uuid) => {
     }
 }
 
-renameFileAsync = async (source, destination, overwrite = false) => {
+const renameFileAsync = async (source, destination, overwrite = false) => {
 
     // Check if file already exists
     if (!overwrite) {
@@ -65,7 +97,48 @@ renameFileAsync = async (source, destination, overwrite = false) => {
     return await fsp.rename(source, destfile);
 }
 
-startPuppeteer = async () => {
+function checkInUUID(uuid, reader) {
+    // Make sure the uuid is known
+    if (config.data.findIndex(item => item.uuid == uuid) != -1) {
+        console.info('UUID ' + uuid + ' is known!');
+        // Make sure the uuid wasn't found
+        if (!foundData.find(item => item.data.uuid == uuid )) {
+            // Push UUID to the found array
+            foundData.push({ data: config.data.find((item) => item.uuid == uuid), reader: (reader) ? reader: foundData.length + 1});
+            console.info('Device found!');
+            // Update Display to show correct numbers of devices
+            numBauteile();
+
+        } else {
+            console.warn('Device was already found!')
+        }
+    } else {
+        console.warn('UUID ' + uuid + ' is unknown!');
+    }
+}
+
+function checkOutUUID(uuid) {
+    let idx = foundData.findIndex(item => item.data.uuid == uuid);
+    if (idx != -1) {
+        foundData.splice(idx, 1);
+        numBauteile();
+    }
+}
+
+function numBauteile() {
+    if (foundData.length > 0) {
+        clearInterval(intervalID);
+    } else {
+        intervalID = setTimeout(() => {
+            logoTab.bringToFront();
+            siteTab.goto(config.siteURL);
+        }, Number(config.timeout) * 1000)
+    }
+    console.log(foundData);
+}
+
+// Start Puppeteer for remote control chrome browser 
+const startPuppeteer = async () => {
     const browser = await puppeteer.launch({
         headless: false,
         defaultViewport: null,
@@ -76,21 +149,28 @@ startPuppeteer = async () => {
     await browser.newPage();
 
     const pages = await browser.pages();
-    const logoTab = pages[0];
-    const siteTab = pages[1];
+    logoTab = pages[0];
+    siteTab = pages[1];
 
-    await logoTab.goto(logoURL);
-    await siteTab.goto('http://google.de');
+    try {
+        await logoTab.goto(config.logoURL);
+    } catch (err) {
+        console.error(`${err} can't open page ${config.logoURL}`);
+    }
+
+    try {
+        await siteTab.goto(config.siteURL);
+    } catch (err) {
+        console.error(`${err} can't open page ${config.siteURL}`);
+    }
     await siteTab.waitForSelector('body');
     await logoTab.bringToFront();
 
     //await browser.close();
 };
 
-//startPuppeteer();
-
 // Write Config
-writeConfig = () => {
+const writeConfig = () => {
     fs.writeFileSync(configFile, JSON.stringify(config, null, 4));
 }
 
@@ -106,13 +186,42 @@ app.get('/', function (req, res) {
 app.get('/admin', function (req, res) {
     res.sendFile(__dirname + '/admin/index.html');
 });
-app.post('/admin', function (req, res) {
-    var form = formidable.IncomingForm();
+app.post('/saveapp', function(req, res) {
+    const form = formidable.IncomingForm();
 
-    form.uploadDir = "temp";
+    form.parse(req, function(err, fields, files) {
+        if (err) {
+            console.error('An error occured parsing form app');
+            return;
+        }
+
+        config.logoURL = fields.logoURL;
+        config.siteURL = fields.siteURL;
+
+        writeConfig();
+        console.log('config updated', config);
+
+        // Send status OK
+        res.status(201).json({
+            message: "OK",
+            fields: fields,
+            files: files
+        });
+    });
+});
+
+app.post('/savecard', function (req, res) {
+    const form = formidable.IncomingForm();
+
+    form.uploadDir = tempDir;
 
     form.parse(req, function (err, fields, files) {
         //console.log(files, fields);
+
+        if (err) {
+            console.error('An error occured parsing form card');
+            return;
+        }
 
         // Make sure uuid was provided
         if (fields.uuid) {
@@ -234,6 +343,18 @@ io.on('connection', function (socket) {
         if (msg.uuid) {
             console.log('UUID received: ' + msg.uuid);
             io.to('guardians-of-the-galaxy').emit('my message', msg);
+
+            siteTab.bringToFront();
+        }
+
+        if (msg.uuid && msg.event == 'start') {
+            console.log('UUID ' + msg.uuid + ' with event ' + msg.event + ' received!');
+            checkInUUID(msg.uuid, msg.reader);
+        }
+    
+        if (msg.uuid && msg.event == 'stop') {
+            console.log('UUID ' + msg.uuid + ' with event ' + msg.event + ' received!');
+            checkOutUUID(msg.uuid, msg.reader);
         }
     });
 
@@ -301,4 +422,7 @@ io.on('connection', function (socket) {
 // Start listening
 var listener = http.listen(port, function () {
     console.log(`listening on port ${listener.address().port}`);
+    // Start Puppeteer
+    if (config.logoURL) startPuppeteer();
 });
+

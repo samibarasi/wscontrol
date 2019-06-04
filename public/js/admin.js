@@ -4,8 +4,10 @@ var socket = io(), // connect to the websocket
     emitBtn = $('#emitBtn'),
     addBtn = $('#addBtn'),
     removeBtn = $('#removeBtn'),
-    saveBtn = $('#saveBtn'),
-    formDevice = $('#formDevice'),
+    saveAppBtn = $('#saveAppBtn'),
+    saveCardBtn = $('#saveCardBtn'),
+    formApp = $('#formApp'),
+    formCard = $('#formCard'),
     foundData = [],
     config;
     
@@ -30,6 +32,7 @@ socket.on('connect', () => {
 socket.on('room joined', function (data) {
     console.log(`room ${data.room} joined`);
 });
+
 // On room left Handler
 socket.on('room left', function (data) {
     console.log(`room ${data.room} left`);
@@ -39,6 +42,7 @@ socket.on('room left', function (data) {
 socket.on('config', data => {
     config = data;
     updateKnownUUIDs();
+    updateForm();
     $('#blocker').hide();
 });
 
@@ -97,6 +101,11 @@ function updateKnownUUIDs() {
     $('#uuid').val(null);
 }
 
+function updateForm() {
+    $('#logoURL').val(config.logoURL);
+    $('#siteURL').val(config.siteURL);
+}
+
 $(document).ready(function () {
 
     updateFoundUUIDs();
@@ -104,7 +113,7 @@ $(document).ready(function () {
     showCards.on('click', function (e) {
         var arr = $(this).val();
         if (arr && arr.length == 1) {
-            $('#formDevice').show();
+            formCard.show();
             $('#uuid').val(arr[0]);
             let selected_item = config.data.find((item) => {
                 return item.uuid == arr[0];
@@ -120,7 +129,7 @@ $(document).ready(function () {
             }
             
         } else {
-            $('#formDevice').hide();
+            formCard.hide();
             $('#uuid').val(null);
         }
     });
@@ -186,7 +195,31 @@ $(document).ready(function () {
         });
     });
 
-    formDevice.on('submit', function (e) {
+    formApp.on('submit', function (e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        message('Sending data...', 'info');
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            success: function (data) {
+                console.log(data);
+                message('config saved', 'success');
+                $('#blocker').show();
+            },
+            error: function (request, status, error) {
+                let response = JSON.parse(request.responseText);
+                message(`Message: ${response.message} | StatusText: ${status}`, 'error')
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+    });
+
+    formCard.on('submit', function (e) {
         e.preventDefault();
         var formData = new FormData();
         formData.append('uuid', $('#uuid').val());
@@ -200,15 +233,16 @@ $(document).ready(function () {
         // Submitting form
         message('Sending data...', 'info');
         $.ajax({
-            url: formDevice.attr('action'),
+            url: $(this).attr('action'),
             type: 'POST',
             data: formData,
             success: function (data) {
                 console.log(data);
-                formDevice.trigger("reset");
-                $('#formDevice').hide();
+                formCard.trigger("reset");
+                formCard.hide();
                 $('#uuid').val(null);
                 message('config saved', 'success');
+                $('#blocker').show();
             },
             error: function (request, status, error) {
                 let response = JSON.parse(request.responseText);

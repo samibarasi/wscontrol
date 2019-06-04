@@ -1,4 +1,6 @@
 node_modules/
 venv/
-!public/uploads/*
-!temp/*
+public/uploads/*
+!public/uploads/README.md
+temp/*
+!temp/README.md

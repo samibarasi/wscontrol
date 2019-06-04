@@ -22,10 +22,29 @@
             <h1>Welcome to WSControl</h1>
         </div>
         <div class="pure-u-1">
+            <form id="formApp" name="formApp" class="pure-form pure-form-aligned" method="POST" action="/saveapp">
+                <fieldset>
+                    <legend>App Settings</legend>
+                    <div class="pure-control-group">
+                        <label>Logo URL</label>
+                        <input name="logoURL" id="logoURL" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label>Site URL</label>
+                        <input name="siteURL" id="siteURL" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label></label>
+                        <button id="saveAppBtn" class="pure-button">Save</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+        <div class="pure-u-1">
             <form class="pure-form pure-form-aligned" method="POST" action="#">
 
                 <fieldset>
-                    <legend>Settings</legend>
+                    <legend>Card Settings</legend>
                     <div class="pure-control-group">
                         <label>Add Card:</label>
                         <div class="InputAddOn">
@@ -44,8 +63,8 @@
                     </div>
                 </fieldset>
             </form>
-            <form name="formDevice" id="formDevice" method="POST" action="/admin" enctype="multipart/form-data"
-                class="pure-form  pure-form-aligned">
+            <form name="formCard" id="formCard" method="POST" action="/savecard" enctype="multipart/form-data"
+                class="pure-form pure-form-aligned">
                 <fieldset>
                     <legend>Data</legend>
                     <div class="pure-control-group">
@@ -59,7 +78,7 @@
                     </div>
                     <div class="pure-control-group">
                         <label></label>
-                        <button id="saveBtn">Save</button>
+                        <button id="saveCardBtn">Save</button>
                     </div>
                     <input type="hidden" id="uuid" name="uuid" />
                 </fieldset>

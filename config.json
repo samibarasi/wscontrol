@@ -1,5 +1,7 @@
 {
     "timeout": 30,
+    "logoURL": "http://localhost:3000/img/standbild.png",
+    "siteURL": "http://localhost:3000/guard",
     "data": [
         {
             "uuid": "a9-e9-c7-55",

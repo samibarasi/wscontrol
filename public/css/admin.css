@@ -23,6 +23,10 @@
     flex-grow: 1;
 }
 
+form#formApp input {
+  flex-grow: 1;
+}
+
 #blocker {
     position: absolute;
     top: 0;
@@ -65,7 +69,7 @@
     display: inline-block;
 }
 
-#formDevice {
+#formCard {
   display: none;
 }
 
