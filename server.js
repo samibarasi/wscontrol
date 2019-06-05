@@ -44,13 +44,13 @@ const checkAccess = async (loc) => {
         if (err) {
             console.error(
                 `${loc} ${err.code === 'ENOENT' ? 'does not exist' : 'is read-only'}`);
-                fs.mkdir(loc, err => {
-                    if (err) {
-                        console.error(`cannot create ${loc}`);
-                        throw(err);
-                    }
-                    console.log(`${loc} was created`);
-                })
+            fs.mkdir(loc, err => {
+                if (err) {
+                    console.error(`cannot create ${loc}`);
+                    throw (err);
+                }
+                console.log(`${loc} was created`);
+            })
         } else {
             console.log(`${loc} exists, and it is writable`);
         }
@@ -58,7 +58,7 @@ const checkAccess = async (loc) => {
 }
 
 // Make sure folder for uploads exists and are accessible
-checkAccess(path.resolve(__dirname +'/temp'));
+checkAccess(path.resolve(__dirname + '/temp'));
 checkAccess(path.resolve(__dirname + '/public/uploads'));
 
 const checkUnknownUUID = (uuid) => {
@@ -103,12 +103,12 @@ function checkInUUID(uuid, reader) {
     if (config.data.findIndex(item => item.uuid == uuid) != -1) {
         console.info('UUID ' + uuid + ' is known!');
         // Make sure the uuid wasn't found
-        if (!foundData.find(item => item.data.uuid == uuid )) {
+        if (!foundData.find(item => item.data.uuid == uuid)) {
             // Push UUID to the found array
-            foundData.push({ data: config.data.find((item) => item.uuid == uuid), reader: (reader) ? reader: foundData.length + 1});
+            foundData.push({ data: config.data.find((item) => item.uuid == uuid), reader: (reader) ? reader : foundData.length + 1 });
             console.info('Device found!');
             // Update Display to show correct numbers of devices
-            numBauteile();
+            if (config.launchChrome) numBauteile();
 
         } else {
             console.warn('Device was already found!')
@@ -122,19 +122,21 @@ function checkOutUUID(uuid) {
     let idx = foundData.findIndex(item => item.data.uuid == uuid);
     if (idx != -1) {
         foundData.splice(idx, 1);
-        numBauteile();
+        if (config.launchChrome) numBauteile();
     }
 }
 
 function numBauteile() {
     if (foundData.length > 0) {
         clearInterval(intervalID);
-        if (config.launchChrome) siteTab.bringToFront();
+        siteTab.bringToFront();
     } else {
+
         intervalID = setTimeout(() => {
             logoTab.bringToFront();
             siteTab.goto(config.siteURL);
-        }, config.timeout * 1000)
+        }, config.timeout * 1000);
+
     }
     console.log(foundData);
 }
@@ -163,7 +165,7 @@ const startPuppeteer = async () => {
         headless: false,
         defaultViewport: null,
         //executablePath: '/usr/bin/google-chrome-stable', 
-	    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         args: ['--kiosk', '--disable-infobars']
     });
 
@@ -205,9 +207,9 @@ app.get('/', function (req, res) {
 });
 
 // RFID Route
-app.get('/p', function(req, res) {
+app.get('/p', function (req, res) {
     console.log(`Incoming Request: RFID (${req.query.uuid}) from reader ${req.query.reader}`);
-    res.status(200).json({message: `Incoming Request: RFID (${req.query.uuid}) from reader ${req.query.reader}`});
+    res.status(200).json({ message: `Incoming Request: RFID (${req.query.uuid}) from reader ${req.query.reader}` });
     const msg = {
         uuid: req.query.uuid,
         event: req.query.event,
@@ -220,10 +222,10 @@ app.get('/p', function(req, res) {
 app.get('/admin', function (req, res) {
     res.sendFile(__dirname + '/admin/index.html');
 });
-app.post('/saveapp', function(req, res) {
+app.post('/saveapp', function (req, res) {
     const form = formidable.IncomingForm();
 
-    form.parse(req, function(err, fields, files) {
+    form.parse(req, function (err, fields, files) {
         if (err) {
             console.error('An error occured parsing form app');
             return;
