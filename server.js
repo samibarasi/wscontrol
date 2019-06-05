@@ -139,6 +139,24 @@ function numBauteile() {
     console.log(foundData);
 }
 
+function handleMessage(msg) {
+    // Check if a uuid property was provided forward message to the guardians-of-the-galaxy group
+    if (msg.uuid) {
+        console.log('UUID received: ' + msg.uuid);
+        io.to('guardians-of-the-galaxy').emit('my message', msg);
+    }
+
+    if (msg.uuid && msg.event == 'start') {
+        console.log('UUID ' + msg.uuid + ' with event ' + msg.event + ' received!');
+        checkInUUID(msg.uuid, msg.reader);
+    }
+
+    if (msg.uuid && msg.event == 'stop') {
+        console.log('UUID ' + msg.uuid + ' with event ' + msg.event + ' received!');
+        checkOutUUID(msg.uuid, msg.reader);
+    }
+}
+
 // Start Puppeteer for remote control chrome browser 
 const startPuppeteer = async () => {
     const browser = await puppeteer.launch({
@@ -184,6 +202,18 @@ app.use('/WBT', express.static(path.resolve(__dirname, '../WBT')));
 // Default Route 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
+});
+
+// RFID Route
+app.get('/p', function(req, res) {
+    console.log(`Incoming Request: RFID (${req.query.uuid}) from reader ${req.query.reader}`);
+    res.status(200).json({message: `Incoming Request: RFID (${req.query.uuid}) from reader ${req.query.reader}`});
+    const msg = {
+        uuid: req.query.uuid,
+        event: req.query.event,
+        reader: req.query.reader
+    }
+    handleMessage(msg);
 });
 
 // Admin Route
@@ -347,21 +377,7 @@ io.on('connection', function (socket) {
     // Message Handler for incoming messages. 
     socket.on('my message', function (msg) {
         console.log('my message', msg);
-        // Check if a uuid property was provided forward message to the guardians-of-the-galaxy group
-        if (msg.uuid) {
-            console.log('UUID received: ' + msg.uuid);
-            io.to('guardians-of-the-galaxy').emit('my message', msg);
-        }
-
-        if (msg.uuid && msg.event == 'start') {
-            console.log('UUID ' + msg.uuid + ' with event ' + msg.event + ' received!');
-            checkInUUID(msg.uuid, msg.reader);
-        }
-    
-        if (msg.uuid && msg.event == 'stop') {
-            console.log('UUID ' + msg.uuid + ' with event ' + msg.event + ' received!');
-            checkOutUUID(msg.uuid, msg.reader);
-        }
+        handleMessage(msg);
     });
 
     socket.on('my broadcast message', function (msg) {
