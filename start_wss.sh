@@ -5,7 +5,7 @@ sleep 10
 export DISPLAY=:0.0
 
 #killall socat
-killall chrome
+#killall chrome
 
 sleep 1
 
@@ -15,8 +15,8 @@ sleep 1
 #. ~/bcontrol/systemd.conf
 
 # start chrome
-rm -r ~/.config/google-chrome/Default/ && rm -r ~/.cache/google-chrome
+#rm -r ~/.config/google-chrome/Default/ && rm -r ~/.cache/google-chrome
 
 sleep 1
 
-/home/user/.nvm/versions/node/v10.16.0/bin/node ~/wscontrol/server.js &
+/home/user/.nvm/versions/node/v10.16.0/bin/node ~/wscontrol/server.js

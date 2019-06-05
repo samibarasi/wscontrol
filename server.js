@@ -164,8 +164,8 @@ const startPuppeteer = async () => {
     const browser = await puppeteer.launch({
         headless: false,
         defaultViewport: null,
-        //executablePath: '/usr/bin/google-chrome-stable', 
-        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        executablePath: '/usr/bin/google-chrome-stable', 
+        //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         args: ['--kiosk', '--disable-infobars']
     });
 
