@@ -22,7 +22,9 @@ const logoURL = path.join('file://', '/Users/samibarasi/Temp/IPDM-Basistraining/
 
 var config = JSON.parse(fs.readFileSync(configFile));
 
-console.log(process.cwd());
+console.log("NODE_ENV: " + process.env.NODE_ENV);
+console.log("CHROME_BIN: " + process.env.CHROME_BIN);
+console.log("CWD: " + process.cwd());
 process.on("SIGINT", function () {
     console.log('bye!');
     //graceful shutdown
@@ -164,7 +166,7 @@ const startPuppeteer = async () => {
     const browser = await puppeteer.launch({
         headless: false,
         defaultViewport: null,
-        executablePath: '/usr/bin/google-chrome-stable', 
+        executablePath: process.env.CHROME_BIN, 
         //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         args: ['--kiosk', '--disable-infobars']
     });
